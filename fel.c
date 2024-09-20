@@ -83,7 +83,11 @@ static inline void usb_bulk_send(libusb_device_handle * hdl, int ep, const char 
 	while(len > 0)
 	{
 		chunk = len < max_chunk ? len : max_chunk;
-		r = libusb_bulk_transfer(hdl, ep, (void *)buf, chunk, &bytes, 10000);
+		r = libusb_bulk_transfer(hdl, ep, (void *)buf, chunk, &bytes, 2000);
+		if (r == LIBUSB_ERROR_TIMEOUT) {
+			printf("ERROR: xfel had timeout comunicating with device (device not listening, needs reset?)\r\n");
+			exit(-1);
+		}
 		if(r != 0)
 		{
 			printf("usb bulk send error\r\n");
@@ -100,7 +104,11 @@ static inline void usb_bulk_recv(libusb_device_handle * hdl, int ep, char * buf,
 
 	while(len > 0)
 	{
-		r = libusb_bulk_transfer(hdl, ep, (void *)buf, len, &bytes, 10000);
+		r = libusb_bulk_transfer(hdl, ep, (void *)buf, len, &bytes, 2000);
+		if (r == LIBUSB_ERROR_TIMEOUT) {
+			printf("ERROR: xfel had timeout comunicating with device (device not listening, needs reset?)\r\n");
+			exit(-1);
+		}
 		if(r != 0)
 		{
 			printf("usb bulk recv error\r\n");

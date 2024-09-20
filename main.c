@@ -57,7 +57,10 @@ int main(int argc, char * argv[])
 	libusb_device **list = NULL;
 	libusb_init(&context);
 	int count = libusb_get_device_list(context, &list);
-	assert(count > 0);
+	if (count <= 0) {
+		printf("ERROR: xfel found no connected usb devices.");
+		return -1;
+	}
 
 	for (size_t i = 0; i < count; ++i) {
 		libusb_device *device = list[i];
@@ -65,13 +68,13 @@ int main(int argc, char * argv[])
 		int rc = libusb_get_device_descriptor(device, &desc);
 		if(rc != 0)
 			{
-			printf("ERROR: Can't get device list: %d\r\n", rc);
+			printf("ERROR: xfel cannot get usb device list: %d\r\n", rc);
 		}
 		if(desc.idVendor == 0x1f3a && desc.idProduct == 0xefe8) {
 			int rc = libusb_open(device, &ctx.hdl);
 			if(rc != 0)
 			{
-				printf("ERROR: Can't connect to device: %d\r\n", rc);
+				printf("ERROR: xfel cannot connect to usb device: %d\r\n", rc);
 			}
 			break;
 		}
@@ -79,7 +82,7 @@ int main(int argc, char * argv[])
 
 	if(!fel_init(&ctx))
 	{
-		printf("ERROR: Can't found any FEL device\r\n");
+		printf("ERROR: xfel found no connected FEL device.\r\n");
 		if(ctx.hdl)
 			libusb_close(ctx.hdl);
 		libusb_exit(NULL);
